@@ -21,15 +21,10 @@ describe("RLP Decoding Tests", () => {
   });
 
   it("decodes a list containing the strings 'cat' and 'dog'", () => {
-    var list = simnet.callReadOnlyFn("rlp-decode", "decode-list", [Cl.bufferFromHex("c88363617483646f67")], address1);
-    var data = simnet.callReadOnlyFn("rlp-decode", "decode-item", [list.result], address1);
-    var encodedCat  = simnet.callReadOnlyFn("rlp-decode", "get-item", [data.result], address1);
-    data  = simnet.callReadOnlyFn("rlp-decode", "get-rlp", [data.result], address1);
-    data  = simnet.callReadOnlyFn("rlp-decode", "decode-item", [data.result], address1);
-    var encodedDog  = simnet.callReadOnlyFn("rlp-decode", "get-item", [data.result], address1);
+    var list = simnet.callReadOnlyFn("rlp-decode", "rlp-to-list", [Cl.bufferFromHex("c88363617483646f67")], address1);
+    var cat = simnet.callReadOnlyFn("rlp-decode", "rlp-decode-string", [list.result, Cl.uint(0)], address1);
+    var dog = simnet.callReadOnlyFn("rlp-decode", "rlp-decode-string", [list.result, Cl.uint(1)], address1);
 
-    var cat  = simnet.callReadOnlyFn("rlp-decode", "decode-string", [encodedCat.result], address1);
-    var dog  = simnet.callReadOnlyFn("rlp-decode", "decode-string", [encodedDog.result], address1);
     expect(cat.result).toEqual(Cl.stringAscii("cat"));
     expect(dog.result).toEqual(Cl.stringAscii("dog"));
   });
@@ -42,8 +37,9 @@ describe("RLP Decoding Tests", () => {
   });
 
   it("decodes an empty list", () => {
-    const { result } = simnet.callReadOnlyFn("rlp-decode", "decode-list", [Cl.bufferFromHex("c0")], address1);
-    expect(result).toBeBuff(Uint8Array.from([]));
+    const { result } = simnet.callReadOnlyFn("rlp-decode", "rlp-to-list", [Cl.bufferFromHex("c0")], address1);
+    console.log(result)
+    expect(result).toBeList([]);
   });
 
   it("decodes the integer 0 as an empty string", () => {
@@ -52,10 +48,6 @@ describe("RLP Decoding Tests", () => {
     const { result } = simnet.callReadOnlyFn("rlp-decode", "decode-uint",  [encoded.result], address1);
     expect(result).toEqual(Cl.uint(0));
   });
-
-  // it("decodes the integer 0 with explicit byte", () => {
-   
-  // });
 
   it("decodes the integer 15", () => {
     var data = simnet.callReadOnlyFn("rlp-decode", "decode-item", [Cl.bufferFromHex("0f")], address1);
